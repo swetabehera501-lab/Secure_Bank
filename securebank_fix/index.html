@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SecureBank — Fraud Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════════ */
+[data-theme="dark"]{
+  --bg:#080f1c;--bg2:#0d1627;--surface:#101e34;--surface2:#162540;--surface3:#1c2e50;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --text:#dce8f8;--text2:#6e8ab0;--text3:#364f70;
+  --inp:#0b1525;--inp-f:#131f35;
+  --shadow:0 2px 20px rgba(0,0,0,.55);--shadow2:0 6px 40px rgba(0,0,0,.7);
+}
+[data-theme="light"]{
+  --bg:#f0f5fc;--bg2:#e4edf9;--surface:#fff;--surface2:#f4f8ff;--surface3:#e8eef8;
+  --border:rgba(0,0,0,.07);--border2:rgba(0,0,0,.14);
+  --text:#0c1829;--text2:#3d5c80;--text3:#8aaac8;
+  --inp:#edf2fc;--inp-f:#fff;
+  --shadow:0 2px 16px rgba(13,27,62,.08);--shadow2:0 6px 32px rgba(13,27,62,.14);
+}
+:root{
+  --orange:#fd7e14;--orange2:#e86e04;
+  --olt:rgba(253,126,20,.12);--olt2:rgba(253,126,20,.2);
+  --red:#e53e3e;--rlt:rgba(229,62,62,.08);
+  --green:#22c55e;--glt:rgba(34,197,94,.09);
+  --yellow:#f6ad55;--navy:#0d1b3e;--navy2:#122050;
+  --r:10px;--rl:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.6;
+  transition:background .3s,color .3s;
+  display:flex;flex-direction:column;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+a,button{cursor:pointer;font-family:inherit;text-decoration:none;color:inherit}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+
+/* ═══ NAVBAR ════════════════════════════════════════ */
+.navbar{
+  background:var(--navy);position:sticky;top:0;z-index:500;
+  box-shadow:0 2px 24px rgba(0,0,0,.6);
+  border-bottom:1px solid rgba(255,255,255,.06);transition:background .3s;
+}
+.nav-inner{max-width:1380px;margin:0 auto;padding:0 18px;display:flex;align-items:center;height:60px;gap:3px}
+.brand{display:flex;align-items:center;gap:9px;margin-right:18px;flex-shrink:0}
+.b-ico{width:34px;height:34px;border-radius:8px;font-size:16px;background:linear-gradient(135deg,var(--orange),#f5a040);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(253,126,20,.4)}
+.b-name{font-family:'Syne',sans-serif;font-size:1.12rem;font-weight:800;color:#fff;letter-spacing:.01em}
+.b-name em{color:var(--orange);font-style:normal}
+.navlinks{display:flex;align-items:center;gap:1px;flex:1;flex-wrap:wrap}
+.nb{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:7px;border:none;font-size:.77rem;font-weight:600;color:rgba(255,255,255,.55);background:transparent;transition:all .2s;white-space:nowrap}
+.nb:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nb.on{color:#fff;background:rgba(253,126,20,.2);border:1px solid rgba(253,126,20,.28)}
+.nbadge{background:var(--red);color:#fff;font-size:.58rem;font-weight:800;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.theme-btn{display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:7px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);font-size:.76rem;font-weight:600;transition:all .2s}
+.theme-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+.tt-track{width:34px;height:18px;border-radius:9px;background:rgba(255,255,255,.15);position:relative;pointer-events:none;transition:background .3s}
+[data-theme="light"] .tt-track{background:var(--orange)}
+.tt-knob{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+[data-theme="light"] .tt-knob{transform:translateX(16px)}
+.nav-logout{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.6);background:transparent;font-size:.75rem;font-weight:600;transition:all .2s}
+.nav-logout:hover{border-color:rgba(229,62,62,.5);color:var(--red)}
+
+/* ═══ PAGES ════════════════════════════════════════ */
+.page{display:none;position:relative;z-index:1;animation:pi .3s ease;flex:1}
+.page.on{display:block}
+main{flex:1;position:relative;z-index:1}
+@keyframes pi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.wrap{max-width:1200px;margin:0 auto;padding:26px 18px}
+.page-hd{margin-bottom:22px}
+.pt{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-.01em;margin-bottom:3px}
+.pt em{color:var(--orange);font-style:normal}
+.ps{font-size:.84rem;color:var(--text2)}
+.phr{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.gap{margin-bottom:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* ═══ CARDS ════════════════════════════════════════ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:var(--shadow);overflow:hidden;transition:background .3s,border-color .3s,box-shadow .2s}
+.card:hover{box-shadow:var(--shadow2)}
+.ch{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:.88rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.ci{width:27px;height:27px;border-radius:6px;background:var(--olt);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px}
+.cb{padding:20px}
+
+/* ═══ FORMS ════════════════════════════════════════ */
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ff{display:flex;flex-direction:column;gap:4px}
+.ff label{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.ff input,.ff select{padding:9px 13px;background:var(--inp);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-size:.88rem;outline:none;transition:all .2s;appearance:none}
+.ff input:focus,.ff select:focus{border-color:var(--orange);background:var(--inp-f);box-shadow:0 0 0 3px var(--olt)}
+.ff input::placeholder{color:var(--text3)}
+.ferr{font-size:.68rem;color:var(--red);display:none;font-weight:600;margin-top:2px}
+.ff.herr input,.ff.herr select{border-color:var(--red)!important}
+.ff.herr .ferr{display:block}
+.fa{display:flex;gap:9px;margin-top:16px;align-items:center;flex-wrap:wrap}
+
+/* ═══ BUTTONS ══════════════════════════════════════ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;font-size:.83rem;font-weight:700;border:none;transition:all .2s;cursor:pointer;letter-spacing:.01em}
+.btn-p{background:linear-gradient(135deg,var(--orange),#f5a040);color:#fff;box-shadow:0 3px 12px rgba(253,126,20,.28)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(253,126,20,.4)}
+.btn-d{background:var(--red);color:#fff}
+.btn-d:hover{opacity:.88}
+.btn-s{background:var(--green);color:#fff}
+.btn-s:hover{opacity:.88}
+.btn-g{background:transparent;color:var(--text2);border:1.5px solid var(--border2)}
+.btn-g:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:5px 11px;font-size:.72rem}
+.btn-w{width:100%;justify-content:center}
+
+/* ═══ TABLES ═══════════════════════════════════════ */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 14px;text-align:left;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);background:var(--surface2);border-bottom:2px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;font-size:.83rem;color:var(--text2);border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.erow td{text-align:center;padding:28px;color:var(--text3);font-style:italic;font-size:.84rem}
+@keyframes fp{0%,100%{background:rgba(229,62,62,.04)}50%{background:rgba(229,62,62,.12)}}
+.fr{animation:fp 2.5s ease infinite}
+.fr td{color:var(--text)!important}
+
+/* ═══ BADGES ═══════════════════════════════════════ */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.03em}
+.badge::before{content:'●';font-size:7px}
+.b-g{background:var(--glt);color:var(--green)}
+.b-r{background:var(--rlt);color:var(--red)}
+.b-o{background:var(--olt);color:var(--orange)}
+.b-b{background:rgba(59,130,246,.1);color:#60a5fa}
+.b-y{background:rgba(246,173,85,.1);color:var(--yellow)}
+.b-gray{background:var(--surface3);color:var(--text3)}
+
+/* ═══ STAT CARDS ════════════════════════════════════ */
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:all .25s}
+.sc:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--orange))}
+.sc-o{--c:var(--orange)}.sc-r{--c:var(--red)}.sc-g{--c:var(--green)}.sc-b{--c:#3b82f6}
+.si{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:12px}
+.sc-o .si{background:var(--olt);color:var(--orange)}.sc-r .si{background:var(--rlt);color:var(--red)}
+.sc-g .si{background:var(--glt);color:var(--green)}.sc-b .si{background:rgba(59,130,246,.1);color:#60a5fa}
+.sv{font-family:'Syne',sans-serif;font-size:1.85rem;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:2px}
+.sl{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+
+code{font-family:monospace;font-size:.76rem;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--surface2);color:var(--orange)}
+
+/* ═══ FRAUD COUNTER ════════════════════════════════ */
+.fbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border-radius:var(--r);background:var(--rlt);border:1.5px solid rgba(229,62,62,.22);margin-bottom:18px}
+.fn{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--red);min-width:42px}
+.ft{font-size:.86rem;color:var(--red);font-weight:600}
+.fs{font-size:.73rem;color:var(--text3)}
+.fcnts{display:flex;gap:8px;margin-left:auto}
+.fcc{text-align:center;padding:7px 12px;border-radius:7px;background:rgba(229,62,62,.1)}
+.fcc .n{font-size:1rem;font-weight:800;color:var(--red)}
+.fcc .l{font-size:.62rem;color:var(--text3);font-weight:700;text-transform:uppercase}
+.fcc.med{background:rgba(246,173,85,.1)}.fcc.med .n{color:var(--yellow)}
+
+/* ═══ HERO ═════════════════════════════════════════ */
+.hero{background:linear-gradient(135deg,#0d1b3e 0%,#122050 55%,#1a3a8f 100%);padding:56px 18px 64px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 80%,rgba(253,126,20,.13) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(253,126,20,.08) 0%,transparent 45%)}
+.hi{position:relative;z-index:1;max-width:660px;margin:0 auto}
+.htag{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;margin-bottom:16px;background:rgba(253,126,20,.12);border:1px solid rgba(253,126,20,.28);font-size:.68rem;font-weight:700;color:var(--orange);letter-spacing:.07em;text-transform:uppercase}
+.hero h1{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:14px}
+.hero h1 em{color:var(--orange);font-style:normal;display:block}
+.hero p{font-size:.93rem;color:rgba(255,255,255,.6);max-width:500px;margin:0 auto 26px;line-height:1.7}
+.hbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hstats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:44px;padding-top:26px;border-top:1px solid rgba(255,255,255,.1)}
+.hs{text-align:center}
+.hs .v{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:1px}
+.hs .l{font-size:.66rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.fc{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--orange);border-radius:var(--rl);padding:22px;transition:all .3s;box-shadow:var(--shadow)}
+.fc:hover{transform:translateY(-4px);box-shadow:var(--shadow2)}
+.fci{width:40px;height:40px;border-radius:10px;background:var(--olt);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:12px}
+.fc h3{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.fc p{font-size:.78rem;color:var(--text2);line-height:1.65}
+
+/* ═══ ADMIN LOGIN ══════════════════════════════════ */
+.alwrap{min-height:70vh;display:flex;align-items:center;justify-content:center;padding:28px 18px}
+.alcard{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:var(--shadow2);overflow:hidden}
+.alh{background:linear-gradient(135deg,#060e24,#0d1b3e);padding:28px 24px;text-align:center}
+.alh-ico{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,var(--orange),#f5a040);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;box-shadow:0 4px 14px rgba(253,126,20,.4)}
+.alh h2{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:3px}
+.alh p{font-size:.78rem;color:rgba(255,255,255,.55)}
+.alb{padding:24px}
+.al-err{padding:9px 12px;background:var(--rlt);border:1px solid rgba(229,62,62,.25);border-radius:7px;color:var(--red);font-size:.8rem;font-weight:600;margin-bottom:14px;display:none}
+.al-hint{text-align:center;margin-top:12px;font-size:.72rem;color:var(--text3)}
+.al-hint strong{color:var(--orange)}
+
+/* ═══ EMAIL MODAL ══════════════════════════════════ */
+.overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px}
+.overlay.on{display:flex}
+.mbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);max-width:460px;width:100%;box-shadow:var(--shadow2);animation:mi .3s cubic-bezier(.4,0,.2,1)}
+@keyframes mi{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.mh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-size:.9rem;font-weight:700;color:var(--text)}
+.mclose{width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mclose:hover{background:var(--rlt);color:var(--red)}
+.mbody{padding:22px}
+.micon{width:52px;height:52px;border-radius:50%;background:var(--glt);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 14px}
+.mtxt{text-align:center}
+.mtxt h3{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:5px}
+.mtxt p{font-size:.82rem;color:var(--text2)}
+.mdetail{margin-top:16px;padding:12px 14px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);font-size:.8rem;color:var(--text2);line-height:1.8}
+.mdetail strong{color:var(--text)}
+.mfoot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+
+/* ═══ TOAST ════════════════════════════════════════ */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--orange);padding:11px 16px;border-radius:10px;font-size:.8rem;font-weight:600;color:var(--text);box-shadow:var(--shadow2);display:flex;align-items:center;gap:8px;animation:tin .35s ease;pointer-events:all;max-width:340px}
+.t-ok{border-left-color:var(--green)}.t-bad{border-left-color:var(--red)}.t-warn{border-left-color:var(--yellow)}
+@keyframes tin{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.spin-wrap{display:inline-flex;align-items:center;gap:8px;color:var(--text3);font-size:.82rem;padding:20px}
+.spin{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═══ DB ERROR SCREEN ══════════════════════════════ */
+.db-error{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:20px}
+.db-error.on{display:flex}
+.dbe-card{background:var(--surface);border:1px solid rgba(229,62,62,.3);border-radius:var(--rl);max-width:540px;width:100%;padding:32px;box-shadow:var(--shadow2);text-align:center}
+.dbe-icon{font-size:40px;margin-bottom:16px}
+.dbe-card h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--red);margin-bottom:10px}
+.dbe-card p{font-size:.86rem;color:var(--text2);margin-bottom:18px;line-height:1.7}
+.dbe-steps{text-align:left;background:var(--bg2);border-radius:var(--r);padding:16px 20px;margin-bottom:18px}
+.dbe-steps h4{font-size:.78rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.dbe-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:.82rem;color:var(--text2)}
+.dbe-step:last-child{margin-bottom:0}
+.dbe-num{width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.dbe-hint{font-size:.76rem;color:var(--text3);font-style:italic}
+.dbe-raw{display:none;margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:6px;font-size:.72rem;color:var(--red);text-align:left;font-family:monospace;word-break:break-word}
+.dbe-raw.on{display:block}
+
+/* ═══ FOOTER ═══════════════════════════════════════ */
+footer{
+  position:relative;z-index:1;
+  background:var(--navy);
+  border-top:1px solid rgba(255,255,255,.06);
+  margin-top:auto;
+}
+.footer-inner{max-width:1200px;margin:0 auto;padding:32px 18px 20px}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:28px}
+.footer-brand{}
+.footer-brand .fb-name{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:8px}
+.footer-brand .fb-name em{color:var(--orange);font-style:normal}
+.footer-brand p{font-size:.78rem;color:rgba(255,255,255,.4);line-height:1.7;max-width:220px}
+.footer-col h4{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px}
+.footer-col a{display:block;font-size:.79rem;color:rgba(255,255,255,.5);margin-bottom:7px;transition:color .2s}
+.footer-col a:hover{color:var(--orange)}
+.footer-divider{height:1px;background:rgba(255,255,255,.06);margin-bottom:20px}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:.75rem;color:rgba(255,255,255,.35)}
+.footer-tags{display:flex;gap:8px;flex-wrap:wrap}
+.ftag{padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:700;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08)}
+.ftag.green{background:rgba(34,197,94,.1);color:rgba(34,197,94,.8);border-color:rgba(34,197,94,.2)}
+
+@media(max-width:900px){.footer-top{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.footer-top{grid-template-columns:1fr}.feat-grid,.g2,.g4,.fg2{grid-template-columns:1fr}.hero h1{font-size:1.9rem}.nav-inner{gap:2px;padding:0 10px}.nb span:last-child{display:none}}
+</style>
+</head>
+<body>
+
+<!-- DB Error Screen (shown if XAMPP/DB is not running) -->
+<div class="db-error" id="dbError">
+  <div class="dbe-card">
+    <div class="dbe-icon">⚙️</div>
+    <h2>Cannot Connect to Database</h2>
+    <p>The website cannot reach MySQL. Follow the steps below to fix it.</p>
+    <div class="dbe-steps">
+      <h4>Fix Steps</h4>
+      <div class="dbe-step"><div class="dbe-num">1</div><div>Open <strong>XAMPP Control Panel</strong> and click <strong>Start</strong> next to both <strong>Apache</strong> and <strong>MySQL</strong></div></div>
+      <div class="dbe-step"><div class="dbe-num">2</div><div>Make sure you open this website via <strong>http://localhost/securebank_fix/</strong> — NOT by double-clicking the file</div></div>
+      <div class="dbe-step"><div class="dbe-num">3</div><div>Open <strong>phpMyAdmin</strong> (http://localhost/phpmyadmin), create database <strong>securebank_db</strong>, then run <strong>sql/setup.sql</strong></div></div>
+      <div class="dbe-step"><div class="dbe-num">4</div><div>Copy project folder to <strong>C:\xampp\htdocs\securebank_fix\</strong> then visit <strong>http://localhost/securebank_fix/</strong></div></div>
+    </div>
+    <p class="dbe-hint" id="dbe-msg">Checking connection…</p>
+    <div class="dbe-raw" id="dbe-raw"></div>
+    <button class="btn btn-p" style="margin-top:14px" onclick="window.location.reload()">🔄 Retry Connection</button>
+  </div>
+</div>
+
+<!-- ═══ NAVBAR ═══════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="b-ico">🛡️</div>
+      <div class="b-name">Secure<em>Bank</em></div>
+    </div>
+    <div class="navlinks">
+      <button class="nb on" onclick="go('home',this)">🏠 <span>Home</span></button>
+      <button class="nb"    onclick="go('customers',this)">👤 <span>Customers</span></button>
+      <button class="nb"    onclick="go('accounts',this)">💳 <span>Accounts</span></button>
+      <button class="nb"    onclick="go('transactions',this)">💸 <span>Transactions</span></button>
+      <button class="nb"    onclick="go('alerts',this)" id="nav-alerts">
+        🚨 <span>Fraud Alerts</span><span class="nbadge" id="alert-badge">0</span>
+      </button>
+      <button class="nb"    onclick="go('reports',this)">📊 <span>Reports</span></button>
+      <button class="nb"    onclick="go('admin',this)">🔐 <span>Admin</span></button>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span>
+        <div class="tt-track"><div class="tt-knob"></div></div>
+        <span id="theme-label">Light</span>
+      </button>
+      <button class="nav-logout" onclick="if(confirm('Logout from SecureBank?'))toast('👋 Logged out','t-ok')">🚪 <span>Logout</span></button>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══ HOME ═════════════════════════════════════════════ -->
+<div class="page on" id="page-home">
+  <div class="hero">
+    <div class="hi">
+      <div class="htag">🎓 MCA Final Year Project</div>
+      <h1>Banking <em>Fraud Detection System</em></h1>
+      <p>Real-time fraud monitoring powered by MySQL triggers. PHP inserts the transaction — SQL detects fraud automatically. All data stored in MySQL database.</p>
+      <div class="hbtns">
+        <button class="btn btn-p" style="font-size:.9rem;padding:10px 24px" onclick="go('transactions',document.querySelectorAll('.nb')[3])">💸 Try Live Demo</button>
+        <button class="btn btn-g" style="color:#fff;border-color:rgba(255,255,255,.25);font-size:.9rem;padding:10px 24px" onclick="go('alerts',document.querySelectorAll('.nb')[4])">🚨 Fraud Alerts</button>
+      </div>
+      <div class="hstats">
+        <div class="hs"><div class="v">5</div><div class="l">SQL Triggers</div></div>
+        <div class="hs"><div class="v">Real-Time</div><div class="l">Detection</div></div>
+        <div class="hs"><div class="v">MySQL</div><div class="l">All Data Stored</div></div>
+        <div class="hs"><div class="v">Auto</div><div class="l">Email Alert</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1200px;margin:0 auto;padding:44px 18px">
+    <div style="font-size:.7rem;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Fraud Detection Engine</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--text);letter-spacing:-.01em;margin-bottom:8px">5 Active SQL Trigger Rules</div>
+    <p style="font-size:.86rem;color:var(--text2);max-width:480px;margin-bottom:32px">Each rule is a MySQL AFTER INSERT trigger. PHP inserts the transaction — MySQL detects fraud and saves alerts automatically.</p>
+    <div class="feat-grid">
+      <div class="fc"><div class="fci">💸</div><h3>Rule 1 — Large Transaction</h3><p>Any single transaction above ₹50,000 triggers a HIGH severity fraud alert saved to the database immediately.</p></div>
+      <div class="fc"><div class="fci">⚡</div><h3>Rule 2 — Rapid Velocity</h3><p>5+ transactions on one account within 60 seconds triggers a HIGH alert — detects bot and scripted attacks.</p></div>
+      <div class="fc"><div class="fci">📍</div><h3>Rule 3 — Location Anomaly</h3><p>Same account used in two different cities within 10 minutes — physically impossible travel detected automatically.</p></div>
+      <div class="fc"><div class="fci">🏧</div><h3>Rule 4 — ATM Daily Limit</h3><p>Total ATM withdrawals exceeding ₹1,00,000 in a single day triggers a MEDIUM severity alert.</p></div>
+      <div class="fc"><div class="fci">🔑</div><h3>Rule 5 — Account Takeover</h3><p>A transaction within 10 minutes of a password change is flagged HIGH — possible account takeover.</p></div>
+      <div class="fc" style="border-top-color:var(--navy)"><div class="fci" style="background:rgba(13,27,62,.1)">📧</div><h3>Instant Email Alert</h3><p>When any rule fires, an email notification modal appears and the alert is permanently saved to MySQL.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CUSTOMERS ════════════════════════════════════════ -->
+<div class="page" id="page-customers">
+  <div class="wrap">
+    <div class="phr">
+      <div class="page-hd"><div class="pt">👤 Customer <em>Management</em></div><div class="ps">All data stored in MySQL — securebank_db.customers table</div></div>
+    </div>
+    <div class="card gap">
+      <div class="ch"><div class="ct"><div class="ci">➕</div>Add New Customer</div></div>
+      <div class="cb">
+        <form id="cf" onsubmit="addCustomer(event)">
+          <div class="fg2">
+            <div class="ff" id="ff-cn"><label>Full Name *</label><input id="cn" type="text" placeholder="e.g. Rahul Sharma"/><span class="ferr">Name required (min 2 chars).</span></div>
+            <div class="ff" id="ff-ce"><label>Email Address *</label><input id="ce" type="email" placeholder="e.g. rahul@gmail.com"/><span class="ferr" id="ce-err">Valid email required.</span></div>
+            <div class="ff" id="ff-cp"><label>Phone Number *</label><input id="cp" type="tel" placeholder="10-digit number" maxlength="10"/><span class="ferr">10-digit phone required.</span></div>
+            <div class="ff"><label>City</label><input id="ccy" type="text" placeholder="e.g. Mumbai"/></div>
+          </div>
+          <div class="fa">
+            <button type="submit" class="btn btn-p">👤 Add Customer</button>
+            <button type="reset" class="btn btn-g">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><div class="ci">👥</div>Customer List</div><span id="cust-ct" style="font-size:.75rem;color:var(--text3)">Loading…</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Customer ID</th><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Registered</th><th>Action</th></tr></thead>
+        <tbody id="cust-tb"><tr><td colspan="7"><div class="spin-wrap"><div class="spin"></div>Loading from MySQL…</div></td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACCOUNTS ═════════════════════════════════════════ -->
+<div class="page" id="page-accounts">
+  <div class="wrap">
+    <div class="phr">
+      <div class="page-hd"><div class="pt">💳 Account <em>Management</em></div><div class="ps">All data stored in MySQL — securebank_db.accounts table</div></div>
+    </div>
+    <div class="card gap">
+      <div class="ch"><div class="ct"><div class="ci">➕</div>Create New Account</div></div>
+      <div class="cb">
+        <form id="af" onsubmit="addAccount(event)">
+          <div class="fg2">
+            <div class="ff" id="ff-ac"><label>Select Customer *</label><select id="asel"><option value="">— Select Customer —</option></select><span class="ferr">Please select a customer.</span></div>
+            <div class="ff" id="ff-at"><label>Account Type *</label><select id="atype"><option value="">— Select Type —</option><option>Savings</option><option>Current</option><option>Business</option></select><span class="ferr">Please select account type.</span></div>
+            <div class="ff" id="ff-ab"><label>Initial Balance (₹) *</label><input id="abal" type="number" placeholder="e.g. 10000" min="0"/><span class="ferr">Enter a valid balance.</span></div>
+            <div class="ff"><label>Status</label><select id="astat"><option value="Active">Active</option><option value="Frozen">Frozen</option></select></div>
+          </div>
+          <div class="fa">
+            <button type="submit" class="btn btn-p">💳 Create Account</button>
+            <button type="reset" class="btn btn-g">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><div class="ci">💳</div>All Accounts</div><span id="acc-ct" style="font-size:.75rem;color:var(--text3)">Loading…</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Account ID</th><th>Customer Name</th><th>Type</th><th>Balance</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody id="acc-tb"><tr><td colspan="7"><div class="spin-wrap"><div class="spin"></div>Loading from MySQL…</div></td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TRANSACTIONS ═════════════════════════════════════ -->
+<div class="page" id="page-transactions">
+  <div class="wrap">
+    <div class="phr">
+      <div class="page-hd"><div class="pt">💸 Transaction <em>Demo</em></div><div class="ps">Submit a transaction — MySQL triggers fire automatically on INSERT</div></div>
+      <span style="font-size:.72rem;color:var(--orange);font-weight:700;padding:4px 12px;background:var(--olt);border-radius:20px">⚡ 5 Triggers Active</span>
+    </div>
+    <!-- Only transaction form - no rules panel -->
+    <div class="card gap">
+      <div class="ch"><div class="ct"><div class="ci">💸</div>New Transaction</div><span style="font-size:.72rem;color:var(--green);font-weight:600">● Connected to MySQL</span></div>
+      <div class="cb">
+        <div class="fg2" style="margin-bottom:14px">
+          <div class="ff" id="ff-ta"><label>Account ID *</label><select id="txacc"><option value="">— Select Account —</option></select><span class="ferr">Please select an account.</span></div>
+          <div class="ff" id="ff-tt"><label>Transaction Type *</label><select id="txtype"><option value="">— Select Type —</option><option>Deposit</option><option>Withdraw</option><option>Transfer</option><option>ATM</option></select><span class="ferr">Select transaction type.</span></div>
+          <div class="ff" id="ff-tm"><label>Amount (₹) *</label><input id="txamt" type="number" placeholder="e.g. 75000" min="1"/><span class="ferr">Enter a valid amount (> 0).</span></div>
+          <div class="ff" id="ff-tl"><label>Location *</label><select id="txloc"><option value="">— Select Location —</option><option>Mumbai</option><option>Delhi</option><option>Bangalore</option><option>Odisha</option><option>Chennai</option><option>Kolkata</option><option>Hyderabad</option><option>Pune</option><option>Ahmedabad</option><option>Jaipur</option></select><span class="ferr">Select a location.</span></div>
+        </div>
+        <button class="btn btn-p btn-w" onclick="addTransaction()">⚡ Submit Transaction to MySQL</button>
+        <div id="tx-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><div class="ci">📋</div>Transaction History</div><span id="tx-ct" style="font-size:.75rem;color:var(--text3)">Loading…</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Transaction ID</th><th>Account ID</th><th>Amount</th><th>Type</th><th>Location</th><th>Date &amp; Time</th><th>Fraud Status</th></tr></thead>
+        <tbody id="tx-tb"><tr><td colspan="7"><div class="spin-wrap"><div class="spin"></div>Loading from MySQL…</div></td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FRAUD ALERTS ═════════════════════════════════════ -->
+<div class="page" id="page-alerts">
+  <div class="wrap">
+    <div class="phr">
+      <div class="page-hd"><div class="pt">🚨 Fraud <em>Alerts</em></div><div class="ps">Auto-detected by MySQL triggers — stored in securebank_db.fraud_alerts</div></div>
+      <button class="btn btn-g btn-sm" id="clear-btn" style="display:none;color:var(--red);border-color:rgba(229,62,62,.3)" onclick="clearAlerts()">🗑️ Clear All (Admin)</button>
+    </div>
+    <div class="fbar">
+      <div class="fn" id="fc-total">0</div>
+      <div><div class="ft">Total Fraud Alerts in Database</div><div class="fs">Auto-inserted by SQL trigger rules after every transaction INSERT</div></div>
+      <div class="fcnts">
+        <div class="fcc"><div class="n" id="fc-high">0</div><div class="l">HIGH</div></div>
+        <div class="fcc med"><div class="n" id="fc-med">0</div><div class="l">MED</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><div class="ci" style="background:var(--rlt);color:var(--red)">⚠️</div>Fraud Alert Log</div><span style="font-size:.72rem;color:var(--red);font-weight:600">🔴 Red rows = fraud detected by SQL triggers</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Alert ID</th><th>Account ID</th><th>Customer</th><th>Rule Triggered</th><th>Severity</th><th>Reason</th><th>Email Sent</th><th>Date &amp; Time</th></tr></thead>
+        <tbody id="alerts-tb"><tr><td colspan="8"><div class="spin-wrap"><div class="spin"></div>Loading from MySQL…</div></td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REPORTS ══════════════════════════════════════════ -->
+<div class="page" id="page-reports">
+  <div class="wrap">
+    <div class="page-hd"><div class="pt">📊 Reports &amp; <em>Analytics</em></div><div class="ps">Live SQL aggregate queries — all data from MySQL database</div></div>
+    <div class="g4 gap">
+      <div class="sc sc-o"><div class="si">👥</div><div class="sv" id="r-c">—</div><div class="sl">Total Customers</div></div>
+      <div class="sc sc-b"><div class="si">💳</div><div class="sv" id="r-a">—</div><div class="sl">Total Accounts</div></div>
+      <div class="sc sc-g"><div class="si">💸</div><div class="sv" id="r-t">—</div><div class="sl">Total Transactions</div></div>
+      <div class="sc sc-r"><div class="si">🚨</div><div class="sv" id="r-f">—</div><div class="sl">Fraud Alerts</div></div>
+    </div>
+    <div class="g2 gap">
+      <div class="card">
+        <div class="ch"><div class="ct"><div class="ci" style="background:var(--rlt);color:var(--red)">⚠️</div>High Risk Accounts</div></div>
+        <div class="tw"><table><thead><tr><th>Account ID</th><th>Customer</th><th>Fraud Count</th><th>Risk Level</th></tr></thead>
+        <tbody id="risk-tb"><tr class="erow"><td colspan="4">Loading…</td></tr></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct"><div class="ci">🏧</div>Daily ATM Summary</div></div>
+        <div class="tw"><table><thead><tr><th>Account</th><th>Date</th><th>Count</th><th>Total</th></tr></thead>
+        <tbody id="atm-tb"><tr class="erow"><td colspan="4">Loading…</td></tr></tbody></table></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><div class="ci">💰</div>Large Transactions (Amount > ₹50,000)</div><span id="large-ct" style="font-size:.75rem;color:var(--text3)">0 records</span></div>
+      <div class="tw"><table><thead><tr><th>TXN ID</th><th>Account</th><th>Customer</th><th>Amount</th><th>Type</th><th>Location</th><th>Date</th></tr></thead>
+      <tbody id="large-tb"><tr class="erow"><td colspan="7">Loading…</td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ════════════════════════════════════════════ -->
+<div class="page" id="page-admin">
+  <!-- Login Form -->
+  <div id="admin-login" class="alwrap">
+    <div class="alcard">
+      <div class="alh">
+        <div class="alh-ico">🔐</div>
+        <h2>Admin Portal</h2>
+        <p>Authorized access only</p>
+      </div>
+      <div class="alb">
+        <div id="al-err" class="al-err"></div>
+        <form id="al-form" onsubmit="adminLogin(event)">
+          <div class="ff gap" id="ff-au" style="margin-bottom:13px">
+            <label>Username *</label>
+            <input id="auser" type="text" placeholder="Enter admin username" autocomplete="username"/>
+            <span class="ferr">Username required.</span>
+          </div>
+          <div class="ff" id="ff-ap" style="margin-bottom:20px">
+            <label>Password *</label>
+            <input id="apass" type="password" placeholder="Enter admin password" autocomplete="current-password"/>
+            <span class="ferr">Password required.</span>
+          </div>
+          <button type="submit" id="al-btn" class="btn btn-p btn-w">🔐 Sign In to Admin Panel</button>
+        </form>
+        <p class="al-hint" style="margin-top:14px">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel (shown after login) -->
+  <div id="admin-panel" style="display:none">
+    <div class="wrap">
+      <div class="phr">
+        <div class="page-hd">
+          <div class="pt">🔐 Admin <em>Panel</em></div>
+          <div class="ps">Logged in as <strong style="color:var(--green)" id="admin-uname">—</strong> &nbsp;•&nbsp; <span style="color:var(--green);font-weight:600">● Active Session</span></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-g btn-sm" style="color:var(--red);border-color:rgba(229,62,62,.3)" onclick="adminClear()">🗑️ Clear All Alerts</button>
+          <button class="btn btn-g btn-sm" onclick="adminLogout()">🚪 Admin Logout</button>
+        </div>
+      </div>
+      <div class="g4 gap">
+        <div class="sc sc-r"><div class="si">🚨</div><div class="sv" id="ad-alerts">—</div><div class="sl">Fraud Alerts</div></div>
+        <div class="sc sc-o"><div class="si">🔒</div><div class="sv" id="ad-frozen">—</div><div class="sl">Frozen Accounts</div></div>
+        <div class="sc sc-g"><div class="si">✅</div><div class="sv" id="ad-active">—</div><div class="sl">Active Accounts</div></div>
+        <div class="sc sc-b"><div class="si">👥</div><div class="sv" id="ad-custs">—</div><div class="sl">Customers</div></div>
+      </div>
+      <div class="g2 gap" style="align-items:start">
+        <!-- Recent Alerts -->
+        <div class="card">
+          <div class="ch"><div class="ct"><div class="ci" style="background:var(--rlt);color:var(--red)">🚨</div>Recent Fraud Alerts</div></div>
+          <div class="tw"><table>
+            <thead><tr><th>Alert ID</th><th>Account</th><th>Rule</th><th>Severity</th><th>Time</th></tr></thead>
+            <tbody id="ad-atb"><tr class="erow"><td colspan="5">Loading…</td></tr></tbody>
+          </table></div>
+        </div>
+        <!-- Lock/Unlock -->
+        <div class="card">
+          <div class="ch"><div class="ct"><div class="ci">🔒</div>Lock / Unlock Accounts</div></div>
+          <div class="cb" id="ad-accs"><div class="spin-wrap"><div class="spin"></div>Loading accounts…</div></div>
+        </div>
+      </div>
+      <!-- Rule 5 Flag -->
+      <div class="card gap">
+        <div class="ch"><div class="ct"><div class="ci">🔑</div>Simulate Rule 5 — Account Takeover Test</div></div>
+        <div class="cb">
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Flag an account as having just changed its password. The next transaction on this account within <strong>10 minutes</strong> will trigger Rule 5 automatically via MySQL trigger.</p>
+          <div class="ff" style="margin-bottom:14px">
+            <label>Select Account to Flag</label>
+            <select id="ad-flag-sel"><option value="">— Select Account —</option></select>
+          </div>
+          <button class="btn btn-d btn-sm" onclick="flagPassword()">🔑 Flag Password Change</button>
+          <div id="ad-flag-res" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main><!-- end main -->
+
+<!-- ═══ EMAIL ALERT MODAL ════════════════════════════════ -->
+<div class="overlay" id="emailModal">
+  <div class="mbox">
+    <div class="mh"><span class="mtitle">📧 Fraud Alert Email Dispatched</span><button class="mclose" onclick="closeModal()">✕</button></div>
+    <div class="mbody">
+      <div class="micon">📧</div>
+      <div class="mtxt"><h3>Alert Email Sent</h3><p>An automated fraud alert was sent to the registered customer email address.</p></div>
+      <div class="mdetail">
+        <div><strong>To:</strong> <span id="m-to">—</span></div>
+        <div><strong>Subject:</strong> ⚠️ [SecureBank] Fraud Alert Detected</div>
+        <div><strong>Rule:</strong> <span id="m-rule">—</span></div>
+        <div><strong>Amount:</strong> <span id="m-amt">—</span></div>
+        <div><strong>Location:</strong> <span id="m-loc">—</span></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn btn-s btn-sm" onclick="closeModal()">✓ Acknowledged</button></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="fb-name">Secure<em>Bank</em></div>
+        <p>A complete banking fraud detection system built with PHP, MySQL, and JavaScript. All data stored in MySQL database with 5 real-time SQL trigger rules.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <a href="#" onclick="go('home',document.querySelectorAll('.nb')[0]);return false">Home</a>
+        <a href="#" onclick="go('customers',document.querySelectorAll('.nb')[1]);return false">Customers</a>
+        <a href="#" onclick="go('accounts',document.querySelectorAll('.nb')[2]);return false">Accounts</a>
+        <a href="#" onclick="go('transactions',document.querySelectorAll('.nb')[3]);return false">Transactions</a>
+      </div>
+      <div class="footer-col">
+        <h4>Features</h4>
+        <a href="#" onclick="go('alerts',document.querySelectorAll('.nb')[4]);return false">Fraud Alerts</a>
+        <a href="#" onclick="go('reports',document.querySelectorAll('.nb')[5]);return false">Reports</a>
+        <a href="#" onclick="go('admin',document.querySelectorAll('.nb')[6]);return false">Admin Panel</a>
+        <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin →</a>
+      </div>
+      <div class="footer-col">
+        <h4>Fraud Rules</h4>
+        <a href="#">Large Transaction (&gt;₹50K)</a>
+        <a href="#">Rapid Velocity (5 in 60s)</a>
+        <a href="#">Location Anomaly</a>
+        <a href="#">ATM Daily Limit</a>
+        <a href="#">Account Takeover</a>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 SecureBank Fraud Detection System &nbsp;•&nbsp; MCA Final Year Project &nbsp;•&nbsp; All Rights Reserved</div>
+      <div class="footer-tags">
+        <span class="ftag green">● MySQL Connected</span>
+        <span class="ftag">PHP 8.x</span>
+        <span class="ftag">5 SQL Triggers</span>
+        <span class="ftag">Real-Time Detection</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─── CONFIG ──────────────────────────────────────
+   IMPORTANT: This must match your folder path.
+   If your folder is C:\xampp\htdocs\securebank_fix\
+   then the URL is http://localhost/securebank_fix/
+   and API path is php/api.php
+─────────────────────────────────────────────────── */
+const API = 'php/api.php';
+
+/* ─── DB ERROR CHECK ──────────────────────────────
+   Detects if opened via file:// (wrong way) or
+   if MySQL is down, shows the fix screen.
+─────────────────────────────────────────────────── */
+async function checkDB() {
+  if (location.protocol === 'file:') {
+    document.getElementById('dbe-msg').textContent =
+      'You opened this via double-click (file://). Open via http://localhost/securebank_fix/ instead.';
+    document.getElementById('dbError').classList.add('on');
+    return false;
+  }
+  try {
+    const r = await fetch(API + '?action=get_stats');
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('dbe-msg').textContent = d.hint || d.error;
+      document.getElementById('dbe-raw').textContent = JSON.stringify(d);
+      document.getElementById('dbe-raw').classList.add('on');
+      document.getElementById('dbError').classList.add('on');
+      return false;
+    }
+    // DB OK — update footer badge
+    const badge = document.querySelector('.ftag.green');
+    if (badge) badge.textContent = '● MySQL Connected';
+    return true;
+  } catch(e) {
+    document.getElementById('dbe-msg').textContent =
+      'Cannot reach php/api.php. Make sure XAMPP Apache is running and the file is in htdocs.';
+    document.getElementById('dbError').classList.add('on');
+    return false;
+  }
+}
+
+/* ─── THEME ───────────────────────────────────────── */
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  document.getElementById('theme-icon').textContent  = t==='dark' ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = t==='dark' ? 'Light' : 'Dark';
+}
+function toggleTheme() {
+  const n = document.documentElement.dataset.theme==='dark' ? 'light' : 'dark';
+  localStorage.setItem('sb_theme', n);
+  applyTheme(n);
+}
+(function(){ applyTheme(localStorage.getItem('sb_theme') || 'dark'); })();
+
+/* ─── NAV ─────────────────────────────────────────── */
+const loaders = {
+  customers: loadCustomers, accounts: loadAccounts,
+  transactions: loadTxns,   alerts: loadAlerts,
+  reports: loadReports,     admin: initAdmin,
+};
+function go(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('page-' + page).classList.add('on');
+  if (el) el.classList.add('on');
+  if (loaders[page]) loaders[page]();
+}
+
+/* ─── API HELPER ──────────────────────────────────── */
+async function api(action, body=null) {
+  try {
+    const opt = { method: body?'POST':'GET', headers:{'Content-Type':'application/json'} };
+    if (body) opt.body = JSON.stringify(body);
+    const res = await fetch(`${API}?action=${action}`, opt);
+    const d   = await res.json();
+    if (d && d.error) { toast('⚠️ ' + (d.hint||d.error), 't-bad', 6000); throw new Error(d.error); }
+    return d;
+  } catch(e) { console.error('API:', e.message); throw e; }
+}
+
+/* ─── TOAST ───────────────────────────────────────── */
+function toast(msg, cls='', dur=3200) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + cls;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, dur);
+}
+
+/* ─── MODAL ───────────────────────────────────────── */
+function showEmail(email, rule, amount, loc) {
+  document.getElementById('m-to').textContent   = email;
+  document.getElementById('m-rule').textContent = rule;
+  document.getElementById('m-amt').textContent  = amount;
+  document.getElementById('m-loc').textContent  = loc;
+  document.getElementById('emailModal').classList.add('on');
+}
+function closeModal() { document.getElementById('emailModal').classList.remove('on'); }
+document.getElementById('emailModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+/* ─── HELPERS ─────────────────────────────────────── */
+const INR = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+const DT  = s => s ? new Date(s).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+const DS  = s => s ? new Date(s).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+const cd  = v => `<code>${v}</code>`;
+const bdg = (t,c) => `<span class="badge ${c}">${t}</span>`;
+const ldg = () => `<div class="spin-wrap"><div class="spin"></div>Loading from MySQL…</div>`;
+
+function clrErr(ids) { ids.forEach(i => { const e=document.getElementById('ff-'+i); if(e) e.classList.remove('herr'); }); }
+function setErr(i)   { const e=document.getElementById('ff-'+i); if(e) e.classList.add('herr'); }
+function gv(i)       { const e=document.getElementById(i); return e ? e.value.trim() : ''; }
+
+/* ═══ CUSTOMERS ══════════════════════════════════════ */
+async function loadCustomers() {
+  const tb = document.getElementById('cust-tb');
+  const ct = document.getElementById('cust-ct');
+  tb.innerHTML = `<tr><td colspan="7">${ldg()}</td></tr>`;
+  try {
+    const rows = await api('get_customers');
+    ct.textContent = rows.length + ' customer' + (rows.length!==1?'s':'');
+    if (!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="7">No customers yet. Add one above.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r => `<tr>
+      <td>${cd(r.customer_id)}</td>
+      <td style="font-weight:600;color:var(--text)">${r.name}</td>
+      <td><a href="mailto:${r.email}" style="color:var(--orange)">${r.email}</a></td>
+      <td>${r.phone}</td><td>${r.city||'—'}</td>
+      <td style="font-size:.74rem">${DS(r.created_at)}</td>
+      <td><button class="btn btn-g btn-sm" style="color:var(--red);border-color:rgba(229,62,62,.3)" onclick="delCust('${r.customer_id}')">🗑️</button></td>
+    </tr>`).join('');
+    fillCustSel(rows);
+  } catch(_) { tb.innerHTML='<tr class="erow"><td colspan="7">Error loading. Is MySQL running?</td></tr>'; }
+}
+
+async function addCustomer(e) {
+  e.preventDefault();
+  clrErr(['cn','ce','cp']);
+  const name=gv('cn'), email=gv('ce'), phone=gv('cp');
+  let ok=true;
+  if (name.length<2)                              { setErr('cn'); ok=false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('ce'); ok=false; }
+  if (!/^\d{10}$/.test(phone))                    { setErr('cp'); ok=false; }
+  if (!ok) return;
+  try {
+    const r = await api('add_customer', {name,email,phone,city:gv('ccy')});
+    if (!r.ok) { document.getElementById('ce-err').textContent=r.msg; setErr('ce'); return; }
+    document.getElementById('cf').reset();
+    toast('✅ Customer '+r.id+' added to database!','t-ok');
+    loadCustomers();
+  } catch(_) {}
+}
+
+async function delCust(id) {
+  if (!confirm('Delete customer '+id+'?')) return;
+  await api('delete_customer', {id});
+  toast('🗑️ Customer deleted.','t-warn');
+  loadCustomers();
+}
+
+function fillCustSel(rows) {
+  const s = document.getElementById('asel'); if(!s) return;
+  const cur = s.value;
+  s.innerHTML = '<option value="">— Select Customer —</option>' +
+    rows.map(r=>`<option value="${r.customer_id}" ${r.customer_id===cur?'selected':''}>${r.customer_id} — ${r.name}</option>`).join('');
+}
+
+/* ═══ ACCOUNTS ═══════════════════════════════════════ */
+async function loadAccounts() {
+  const tb=document.getElementById('acc-tb'), ct=document.getElementById('acc-ct');
+  tb.innerHTML=`<tr><td colspan="7">${ldg()}</td></tr>`;
+  try {
+    const rows = await api('get_accounts');
+    ct.textContent = rows.length + ' account' + (rows.length!==1?'s':'');
+    if (!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="7">No accounts yet. Create one above.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r => `<tr>
+      <td>${cd(r.account_id)}</td>
+      <td style="font-weight:600;color:var(--text)">${r.cust_name}</td>
+      <td>${bdg(r.account_type,'b-b')}</td>
+      <td style="font-weight:700;color:var(--text)">${INR(r.balance)}</td>
+      <td>${bdg(r.status, r.status==='Active'?'b-g':'b-r')}</td>
+      <td style="font-size:.74rem">${DS(r.created_at)}</td>
+      <td><button class="btn btn-g btn-sm" onclick="toggleAcc('${r.account_id}')">${r.status==='Active'?'🔒 Freeze':'🔓 Unfreeze'}</button></td>
+    </tr>`).join('');
+    fillAccSel(rows);
+  } catch(_) { tb.innerHTML='<tr class="erow"><td colspan="7">Error loading.</td></tr>'; }
+}
+
+async function addAccount(e) {
+  e.preventDefault();
+  clrErr(['ac','at','ab']);
+  const cid=gv('asel'), type=gv('atype'), bal=gv('abal');
+  let ok=true;
+  if (!cid)               { setErr('ac'); ok=false; }
+  if (!type)              { setErr('at'); ok=false; }
+  if (bal===''||+bal<0)   { setErr('ab'); ok=false; }
+  if (!ok) return;
+  try {
+    const r = await api('add_account', {customer_id:cid,account_type:type,balance:+bal,status:gv('astat')||'Active'});
+    if (!r.ok) { toast('❌ '+r.msg,'t-bad'); return; }
+    document.getElementById('af').reset();
+    toast('✅ Account '+r.id+' created in database!','t-ok');
+    loadAccounts();
+  } catch(_) {}
+}
+
+async function toggleAcc(id) {
+  const r = await api('toggle_account', {id});
+  if (!r) return;
+  if (!r.ok) { toast('❌ '+r.msg,'t-bad'); return; }
+  toast((r.status==='Frozen'?'🔒 Frozen: ':'🔓 Unfrozen: ')+id, r.status==='Frozen'?'t-bad':'t-ok');
+  loadAccounts();
+}
+
+function fillAccSel(rows) {
+  const s = document.getElementById('txacc'); if(!s) return;
+  const cur = s.value;
+  s.innerHTML = '<option value="">— Select Account —</option>' +
+    rows.map(r=>`<option value="${r.account_id}" ${r.account_id===cur?'selected':''}>${r.account_id} — ${r.cust_name} (${r.account_type})</option>`).join('');
+  // Also fill admin flag dropdown
+  const s2 = document.getElementById('ad-flag-sel'); if(!s2) return;
+  s2.innerHTML = '<option value="">— Select Account —</option>' +
+    rows.map(r=>`<option value="${r.account_id}">${r.account_id} — ${r.cust_name}</option>`).join('');
+}
+
+async function loadAccDropdown() {
+  try { const r=await api('get_accounts'); if(r) fillAccSel(r); } catch(_) {}
+}
+
+/* ═══ TRANSACTIONS ════════════════════════════════════ */
+async function loadTxns() {
+  const tb=document.getElementById('tx-tb'), ct=document.getElementById('tx-ct');
+  tb.innerHTML=`<tr><td colspan="7">${ldg()}</td></tr>`;
+  try {
+    const rows = await api('get_transactions');
+    ct.textContent = rows.length + ' transactions';
+    if (!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="7">No transactions yet.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r => `<tr ${r.flagged=='1'?'class="fr"':''}>
+      <td>${cd(r.tx_id)}</td>
+      <td style="font-weight:600">${r.account_id}</td>
+      <td style="font-weight:700;color:${r.flagged=='1'?'var(--red)':'var(--text)'}">${INR(r.amount)}</td>
+      <td>${bdg(r.tx_type, r.tx_type==='Deposit'?'b-g':r.tx_type==='ATM'?'b-o':'b-b')}</td>
+      <td>${r.location}</td>
+      <td style="font-size:.75rem;color:var(--text3)">${DT(r.tx_time)}</td>
+      <td>${bdg(r.flagged=='1'?'⚠️ Flagged':'✓ Clean', r.flagged=='1'?'b-r':'b-g')}</td>
+    </tr>`).join('');
+    loadAccDropdown();
+  } catch(_) { tb.innerHTML='<tr class="erow"><td colspan="7">Error loading.</td></tr>'; }
+}
+
+async function addTransaction() {
+  clrErr(['ta','tt','tm','tl']);
+  const accId=gv('txacc'), amt=gv('txamt'), type=gv('txtype'), loc=gv('txloc');
+  let ok=true;
+  if (!accId)            { setErr('ta'); ok=false; }
+  if (!amt||+amt<=0)     { setErr('tm'); ok=false; }
+  if (!type)             { setErr('tt'); ok=false; }
+  if (!loc)              { setErr('tl'); ok=false; }
+  if (!ok) return;
+
+  const res = document.getElementById('tx-result');
+  res.innerHTML = `<div class="spin-wrap"><div class="spin"></div>Processing transaction &amp; running SQL fraud checks…</div>`;
+
+  try {
+    const r = await api('add_transaction', {account_id:accId, amount:+amt, tx_type:type, location:loc});
+    if (!r) return;
+
+    if (!r.ok) {
+      res.innerHTML = `<div style="padding:12px 16px;background:var(--rlt);border:1.5px solid rgba(229,62,62,.3);border-radius:9px;color:var(--red);font-size:.84rem;font-weight:600">🔒 ${r.msg}</div>`;
+      return;
+    }
+
+    if (r.fraud && r.fraud.length > 0) {
+      res.innerHTML = `<div style="padding:14px 16px;background:var(--rlt);border:1.5px solid rgba(229,62,62,.35);border-radius:9px">
+        <div style="font-weight:800;color:var(--red);font-size:.9rem;margin-bottom:9px">🚨 FRAUD DETECTED — ${r.fraud.length} SQL Trigger(s) Fired!</div>
+        ${r.fraud.map(f=>`<div style="font-size:.79rem;color:var(--text2);margin-bottom:4px">• <strong>${f.rule_name}</strong>: ${f.reason}</div>`).join('')}
+        <div style="font-size:.74rem;color:var(--text3);margin-top:9px">📧 Alert email sent to <strong>${r.cust_email}</strong></div>
+      </div>`;
+      showEmail(r.cust_email, r.fraud[0].rule_name, INR(amt), loc);
+      toast('🚨 Fraud detected! Alert saved to MySQL.', 't-bad', 5000);
+    } else {
+      res.innerHTML = `<div style="padding:12px 16px;background:var(--glt);border:1.5px solid rgba(34,197,94,.25);border-radius:8px;color:var(--green);font-size:.84rem;font-weight:600">✅ ${r.tx_id} completed — No fraud detected. Saved to MySQL.</div>`;
+      toast('✅ Transaction '+r.tx_id+' saved!','t-ok');
+    }
+
+    // Reset form fields
+    ['txacc','txtype','txamt','txloc'].forEach(i => { const e=document.getElementById(i); if(e) e.value=''; });
+    loadTxns();
+    updateBadge();
+  } catch(_) { res.innerHTML=''; }
+}
+
+/* ═══ FRAUD ALERTS ════════════════════════════════════ */
+async function loadAlerts() {
+  const tb=document.getElementById('alerts-tb');
+  tb.innerHTML=`<tr><td colspan="8">${ldg()}</td></tr>`;
+  try {
+    const rows = await api('get_alerts');
+    const high = rows.filter(r=>r.severity==='HIGH').length;
+    const med  = rows.filter(r=>r.severity==='MEDIUM').length;
+    document.getElementById('fc-total').textContent = rows.length;
+    document.getElementById('fc-high').textContent  = high;
+    document.getElementById('fc-med').textContent   = med;
+    updateBadge(rows.length);
+    if (!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="8">No fraud alerts yet. Submit a transaction > ₹50,000 to test.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r => `<tr class="fr">
+      <td>${cd(r.alert_id)}</td>
+      <td style="font-weight:700">${r.account_id}</td>
+      <td>${r.cust_name}</td>
+      <td style="font-size:.79rem;font-weight:700;color:var(--text)">${r.rule_name}</td>
+      <td>${bdg(r.severity, r.severity==='HIGH'?'b-r':'b-y')}</td>
+      <td style="font-size:.77rem;max-width:240px;word-break:break-word">${r.reason}</td>
+      <td>${bdg('✓ Sent','b-g')}</td>
+      <td style="font-size:.74rem;color:var(--text3)">${DT(r.created_at)}</td>
+    </tr>`).join('');
+  } catch(_) { tb.innerHTML='<tr class="erow"><td colspan="8">Error loading.</td></tr>'; }
+}
+
+async function clearAlerts() {
+  if (!confirm('Clear all fraud alerts?')) return;
+  const r = await api('clear_alerts');
+  if (!r.ok) { toast('❌ '+r.msg,'t-bad'); return; }
+  toast('🗑️ Alerts cleared.','t-warn');
+  loadAlerts();
+}
+
+async function updateBadge(n) {
+  if (n===undefined) { try { const r=await api('get_stats'); n=r?r.alerts:0; } catch(_){return;} }
+  const el = document.getElementById('alert-badge');
+  if (el) { el.textContent=n; el.style.display=n>0?'':'none'; }
+}
+
+/* ═══ REPORTS ═════════════════════════════════════════ */
+async function loadReports() {
+  try {
+    const s=await api('get_stats');
+    if (!s) return;
+    document.getElementById('r-c').textContent = s.customers;
+    document.getElementById('r-a').textContent = s.accounts;
+    document.getElementById('r-t').textContent = s.transactions;
+    document.getElementById('r-f').textContent = s.alerts;
+  } catch(_) {}
+
+  try {
+    const rows=await api('get_high_risk');
+    const tb=document.getElementById('risk-tb');
+    if (!rows||!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="4">No high-risk accounts yet.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r=>{
+      const pct=Math.min(r.cnt*25,100);
+      return `<tr class="fr">
+        <td>${cd(r.account_id)}</td>
+        <td style="font-weight:600;color:var(--text)">${r.cust_name}</td>
+        <td style="font-weight:800;color:var(--red)">${r.cnt} alert${r.cnt!==1?'s':''}</td>
+        <td>${bdg(pct>=75?'CRITICAL':pct>=50?'HIGH':'MEDIUM', pct>=75?'b-r':'b-o')}</td>
+      </tr>`;
+    }).join('');
+  } catch(_) {}
+
+  try {
+    const rows=await api('get_atm_summary');
+    const tb=document.getElementById('atm-tb');
+    if (!rows||!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="4">No ATM data yet.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r=>`<tr ${parseFloat(r.total)>100000?'class="fr"':''}>
+      <td>${cd(r.account_id)}</td><td style="font-size:.78rem">${r.d}</td><td>${r.cnt}</td>
+      <td style="font-weight:700;color:${parseFloat(r.total)>100000?'var(--red)':'var(--text)'}">${INR(r.total)} ${parseFloat(r.total)>100000?'⚠️':''}</td>
+    </tr>`).join('');
+  } catch(_) {}
+
+  try {
+    const rows=await api('get_large_tx');
+    const ct=document.getElementById('large-ct');
+    const tb=document.getElementById('large-tb');
+    if (ct) ct.textContent=rows.length+' record'+(rows.length!==1?'s':'');
+    if (!rows||!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="7">No large transactions yet.</td></tr>'; return; }
+    tb.innerHTML = rows.map(r=>`<tr class="fr">
+      <td>${cd(r.tx_id)}</td><td style="font-weight:600">${r.account_id}</td><td>${r.cust_name}</td>
+      <td style="font-weight:800;color:var(--red)">${INR(r.amount)}</td>
+      <td>${bdg(r.tx_type,'b-b')}</td><td>${r.location}</td>
+      <td style="font-size:.74rem">${DT(r.tx_time)}</td>
+    </tr>`).join('');
+  } catch(_) {}
+}
+
+/* ═══ ADMIN ═══════════════════════════════════════════ */
+async function initAdmin() {
+  try {
+    const r = await api('admin_check');
+    if (r && r.ok) showAdminPanel(r.username);
+  } catch(_) {}
+}
+
+async function adminLogin(e) {
+  e.preventDefault();
+  clrErr(['au','ap']);
+  const user=gv('auser'), pass=document.getElementById('apass')?.value||'';
+  const errDiv=document.getElementById('al-err');
+  let ok=true;
+  if (!user) { setErr('au'); ok=false; }
+  if (!pass) { setErr('ap'); ok=false; }
+  if (!ok) return;
+
+  const btn=document.getElementById('al-btn');
+  errDiv.style.display='none';
+  btn.textContent='⏳ Verifying…'; btn.disabled=true;
+
+  try {
+    const r = await api('admin_login', {username:user, password:pass});
+    if (!r) return;
+    if (r.ok) {
+      toast('🔐 Admin access granted!','t-ok');
+      showAdminPanel(r.username);
+      document.getElementById('clear-btn').style.display='inline-flex';
+    } else {
+      errDiv.textContent='❌ '+r.msg;
+      errDiv.style.display='block';
+    }
+  } catch(_) {
+    errDiv.textContent='❌ Server error. Is XAMPP running?';
+    errDiv.style.display='block';
+  } finally {
+    btn.textContent='🔐 Sign In to Admin Panel'; btn.disabled=false;
+  }
+}
+
+function showAdminPanel(username) {
+  document.getElementById('admin-login').style.display='none';
+  document.getElementById('admin-panel').style.display='block';
+  document.getElementById('admin-uname').textContent=username||'Admin';
+  loadAdminPanel();
+}
+
+async function loadAdminPanel() {
+  try {
+    const s=await api('admin_get_stats');
+    if (s&&s.ok) {
+      document.getElementById('ad-alerts').textContent = s.total_alerts;
+      document.getElementById('ad-frozen').textContent = s.frozen;
+      document.getElementById('ad-active').textContent = s.active_acc;
+      document.getElementById('ad-custs').textContent  = s.customers;
+    }
+  } catch(_) {}
+
+  try {
+    const rows=await api('get_alerts');
+    const tb=document.getElementById('ad-atb');
+    if (!rows||!rows.length) { tb.innerHTML='<tr class="erow"><td colspan="5">No alerts.</td></tr>'; }
+    else tb.innerHTML=rows.slice(0,8).map(r=>`<tr class="fr">
+      <td>${cd(r.alert_id)}</td><td style="font-weight:600">${r.account_id}</td>
+      <td style="font-size:.76rem;font-weight:600">${r.rule_name.split('—')[0].trim()}</td>
+      <td>${bdg(r.severity, r.severity==='HIGH'?'b-r':'b-y')}</td>
+      <td style="font-size:.73rem;color:var(--text3)">${DT(r.created_at)}</td>
+    </tr>`).join('');
+  } catch(_) {}
+
+  try {
+    const rows=await api('get_accounts');
+    const div=document.getElementById('ad-accs');
+    if (!rows||!rows.length) { div.innerHTML='<p style="color:var(--text3);font-size:.84rem">No accounts found.</p>'; return; }
+    div.innerHTML=rows.map(r=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-weight:700;font-size:.84rem;color:var(--text)">${r.account_id}</div>
+        <div style="font-size:.74rem;color:var(--text3)">${r.cust_name} · ${r.account_type} · ${INR(r.balance)}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${bdg(r.status, r.status==='Active'?'b-g':'b-r')}
+          <button class="btn btn-sm ${r.status==='Active'?'btn-d':'btn-s'}" onclick="adminToggle('${r.account_id}')">
+            ${r.status==='Active'?'🔒 Lock':'🔓 Unlock'}
+          </button>
+        </div>
+      </div>`).join('');
+    fillAccSel(rows);
+  } catch(_) {}
+}
+
+async function adminToggle(id) {
+  if (!confirm('Toggle account '+id+'?')) return;
+  const r=await api('toggle_account',{id});
+  if (!r) return;
+  toast((r.status==='Frozen'?'🔒 Locked: ':'🔓 Unlocked: ')+id, r.status==='Frozen'?'t-bad':'t-ok');
+  loadAdminPanel(); loadAccounts();
+}
+
+async function flagPassword() {
+  const id=gv('ad-flag-sel');
+  if (!id) { toast('Select an account first.','t-bad'); return; }
+  const r=await api('flag_password',{account_id:id});
+  if (!r) return;
+  document.getElementById('ad-flag-res').innerHTML=`
+    <div style="padding:10px 13px;background:var(--olt);border:1px solid rgba(253,126,20,.25);border-radius:8px;font-size:.8rem;color:var(--orange);font-weight:600">
+      ✅ ${r.msg}
+    </div>`;
+  toast('🔑 Rule 5 armed for '+id,'t-warn');
+}
+
+async function adminClear() {
+  if (!confirm('Clear ALL fraud alerts from database?')) return;
+  const r=await api('clear_alerts');
+  if (!r) return;
+  if (r.ok) { toast('🗑️ All alerts cleared from MySQL.','t-warn'); loadAdminPanel(); loadAlerts(); }
+  else toast('❌ '+(r.msg||'Error'),'t-bad');
+}
+
+async function adminLogout() {
+  await api('admin_logout');
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-login').style.display='flex';
+  document.getElementById('al-form').reset();
+  document.getElementById('al-err').style.display='none';
+  document.getElementById('clear-btn').style.display='none';
+  toast('🚪 Admin logged out.','t-warn');
+}
+
+/* ═══ INIT ════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await checkDB();
+  if (!ok) return;
+  updateBadge();
+  loadAccDropdown();
+  const r = await api('admin_check').catch(()=>null);
+  if (r && r.ok) document.getElementById('clear-btn').style.display='inline-flex';
+});
+</script>
+</body>
+</html>
